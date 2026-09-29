@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Forms & Inputs */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Buttons */
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+
+        /* Step Progress Bar (For Signup Flow) */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .step-indicator {
+            width: 35px;
+            height: 35px;
+            background: var(--border);
+            color: var(--text-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .step-indicator.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-page {
+            display: none;
+        }
+
+        .form-page.active {
+            display: block;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .radio-label, .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-label:hover, .checkbox-label:hover {
+            border-color: var(--primary);
+            background-color: #f9fafb;
+        }
+
+        input[type="radio"], input[type="checkbox"] {
+            margin-right: 15px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .catalog-container {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .payment-box, .dashboard-card {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .total-row {
+            border-top: 2px solid var(--border);
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        /* Dashboard specific */
+        .user-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .sub-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .sub-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+        
+        .sub-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- VIEW 1: LOGIN PAGE -->
+    <div id="view-login" class="view-section active">
+        <h2>Client Login</h2>
+        <p>Enter your phone number to access your account or subscribe to services.</p>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label for="loginPhone">Phone Number</label>
+                <input type="tel" id="loginPhone" placeholder="e.g. 0970000000" required>
+            </div>
+            <div class="btn-container">
+                <button type="submit" class="btn btn-primary">NEXT</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- VIEW 2: CUSTOMER DASHBOARD (If number exists) -->
+    <div id="view-dashboard" class="view-section">
+        <span class="user-badge">Active Client</span>
+        <h2 id="dashWelcome">Welcome Back!</h2>
+        <p id="dashContact" style="margin-bottom: 15px;"></p>
+        
+        <div class="dashboard-card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 10px;">Your Active Subscriptions</h3>
+            <ul class="sub-list" id="dashSubscriptions">
+                <!-- Injected via JavaScript -->
+            </ul>
+        </div>
+        
+        <div class="btn-container">
+            <button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- VIEW 3: SIGN UP FLOW (If number does not exist) -->
+    <div id="view-signup" class="view-section">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="step-indicator active">1</div>
+            <div class="step-indicator">2</div>
+            <div class="step-indicator">3</div>
+            <div class="step-indicator">4</div>
+        </div>
+
+        <form id="signupForm" onsubmit="handleSignupSubmit(event)">
+            
+            <!-- Page 1: Account Type -->
+            <div class="form-page active" id="page-1">
+                <h2>Select Account Type</h2>
+                <div class="option-group">
+                    <label class="radio-label">
+                        <input type="radio" name="accountType" value="shared" checked>
+                        <div>
+                            <strong>Shared Account</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Access shared profiles or individual slots.</div>
+                        </div>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="accountType" value="private">
+                        <div>
+                            <strong>Private Account</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Full standalone premium accounts.</div>
+                        </div>
+                    </label>
+                </div>
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="logout()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="goToPage(2)">NEXT</button>
+                </div>
+            </div>
+
+            <!-- Page 2: Catalog -->
+            <div class="form-page" id="page-2">
+                <h2>Select Services</h2>
+                <div class="catalog-container option-group" id="catalogList">
+                    <!-- JavaScript dynamically lists items here -->
+                </div>
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="goToPage(1)">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="goToPage(3)">NEXT</button>
+                </div>
+            </div>
+
+            <!-- Page 3: Payment -->
+            <div class="form-page" id="page-3">
+                <h2>Make Payment</h2>
+                <div class="payment-box">
+                    <div id="orderSummary">
+                        <!-- Summary here -->
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; text-align: center; margin-bottom: 15px;">
+                    Please proceed with your mobile money transfer based on the total above.
+                </p>
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="goToPage(2)">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="goToPage(4)">NEXT</button>
+                </div>
+            </div>
+
+            <!-- Page 4: Contact Details -->
+            <div class="form-page" id="page-4">
+                <h2>Contact Details</h2>
+                <div class="input-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" required placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <!-- Read-only or prefilled from what they typed to keep things fluid -->
+                    <input type="tel" id="phoneNumber" required>
+                </div>
+                <div class="input-group">
+                    <label for="emailAddress">Email Address</label>
+                    <input type="email" id="emailAddress" required placeholder="john@example.com">
+                </div>
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="goToPage(3)">Back</button>
+                    <button type="submit" class="btn btn-primary">SUBMIT</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<script>
+    // Embedded Client Database Table Mock
+    const clientsDatabase = [
+        {
+            "name": "Alice Banda",
+            "phone": "0971234567",
+            "email": "alice@gmail.com",
+            "subscriptions": [
+                {"service": "Netflix Premium (shared profiles)", "type": "Shared"},
+                {"service": "Spotify", "type": "Shared"}
+            ]
+        },
+        {
+            "name": "Mwansa Mwape",
+            "phone": "0968887776",
+            "email": "mwansa.m@outlook.com",
+            "subscriptions": [
+                {"service": "Netflix (Premium)", "type": "Private"},
+                {"service": "Gemini AI (pro)", "type": "Private"}
+            ]
+        }
+    ];
+
+    // Embedded PriceList
+    const priceListData = {
+        "shared": [
+            {"service": "K65 Netflix Premium (shared profiles)", "price": 65},
+            {"service": "K100 Netflix Premium (private profile)", "price": 100},
+            {"service": "K80 prime video (All devices)", "price": 80},
+            {"service": "K150/2 weeks DSTV Stream", "price": 150},
+            {"service": "K60 Spotify", "price": 60},
+            {"service": "K80 Apple Music slot", "price": 80},
+            {"service": "K50 iCloud storage (50GB)", "price": 50},
+            {"service": "K80 iCloud storage (200GB)", "price": 80},
+            {"service": "K100 ~ music distribution (Spotify, Apple Music, Amazon..)", "price": 100},
+            {"service": "K50 ~ music cover art/ Logo design", "price": 50},
+            {"service": "K50 Gemini Ai plus", "price": 50},
+            {"service": "Other:", "price": 0}
+        ],
+        "private": [
+            {"service": "K160 Netflix (Mobile)", "price": 160},
+            {"service": "K250 Netflix (Basic)", "price": 250},
+            {"service": "K350 Netflix (Standard)", "price": 350},
+            {"service": "K399 Netflix (Premium)", "price": 399},
+            {"service": "K250 DSTV STREAM (Promo 🔥)", "price": 250},
+            {"service": "K250 ~ Amazon Prime Video", "price": 250},
+            {"service": "K150 Spotify (Individual)", "price": 150},
+            {"service": "K250 Spotify (Family)", "price": 250},
+            {"service": "K180 Apple Music (Individual )", "price": 180},
+            {"service": "K300 Apple Music (Family)", "price": 300},
+            {"service": "K80 iCloud storage (50GB)", "price": 80},
+            {"service": "K150 iCloud storage (200GB)", "price": 150},
+            {"service": "K300 iCloud storage (2 TB)", "price": 300},
+            {"service": "K100 Gemini Ai (plus)", "price": 100},
+            {"service": "K150 Gemini Ai (pro)", "price": 150},
+            {"service": "K150 chat-Gpt Ai (Go)", "price": 150},
+            {"service": "Other:", "price": 0}
+        ]
+    };
+
+    let signupCurrentPage = 1;
+
+    // View Switching Controller
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(view => {
+            view.classList.remove('active');
+        });
+        document.getElementById(viewId).classList.add('active');
+    }
+
+    // 1. Handling the Phone verification 
+    function handleLogin(event) {
+        event.preventDefault();
+        const inputNumber = document.getElementById('loginPhone').value.trim();
+        
+        // Lookup inside our embedded clients table
+        const verifiedClient = clientsDatabase.find(client => client.phone === inputNumber);
+
+        if (verifiedClient) {
+            // Case A: Found in db -> render dashboard
+            showDashboard(verifiedClient);
+        } else {
+            // Case B: Not found -> route straight to registration flow
+            startSignupFlow(inputNumber);
+        }
+    }
+
+    // Dashboard View Setup
+    function showDashboard(client) {
+        document.getElementById('dashWelcome').innerText = `Welcome Back, ${client.name}!`;
+        document.getElementById('dashContact').innerText = `Email: ${client.email} | Phone: ${client.phone}`;
+        
+        const listContainer = document.getElementById('dashSubscriptions');
+        listContainer.innerHTML = '';
+        
+        client.subscriptions.forEach(sub => {
+            const item = document.createElement('li');
+            item.innerHTML = `<span>${sub.service}</span> <span style="font-size:0.8rem; background:#e5e7eb; padding:2px 8px; border-radius:4px;">${sub.type}</span>`;
+            listContainer.appendChild(item);
+        });
+
+        switchView('view-dashboard');
+    }
+
+    // Registration Flow Initiator
+    function startSignupFlow(enteredNumber) {
+        // Pre-fill input value on page 4 seamlessly
+        document.getElementById('phoneNumber').value = enteredNumber;
+        
+        // Reset dynamic page forms
+        signupCurrentPage = 1;
+        goToPage(1);
+        switchView('view-signup');
+    }
+
+    function logout() {
+        document.getElementById('loginForm').reset();
+        switchView('view-login');
+    }
+
+    // --- Signup Wizard Framework Logic ---
+    function goToPage(pageNumber) {
+        if (pageNumber === 2 && signupCurrentPage === 1) {
+            generateCatalog();
+        }
+        if (pageNumber === 3) {
+            const total = generateSummary();
+            if (total === 0) {
+                alert("Please select at least one package.");
+                return;
+            }
+        }
+
+        document.getElementById(`page-${signupCurrentPage}`).classList.remove('active');
+        document.getElementById(`page-${pageNumber}`).classList.add('active');
+        
+        signupCurrentPage = pageNumber;
+        updateProgressIndicators();
+    }
+
+    function updateProgressIndicators() {
+        const indicators = document.querySelectorAll('.step-indicator');
+        indicators.forEach((indicator, index) => {
+            if (index < signupCurrentPage) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+    }
+
+    function generateCatalog() {
+        const accountType = document.querySelector('input[name="accountType"]:checked').value;
+        const catalogContainer = document.getElementById('catalogList');
+        catalogContainer.innerHTML = ''; 
+
+        const list = priceListData[accountType];
+        list.forEach((item, index) => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            const priceText = item.price > 0 ? `K${item.price}` : 'Quote';
+            
+            label.innerHTML = `
+                <input type="checkbox" name="services" value="${index}" data-price="${item.price}" data-name="${item.service}">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span>${item.service}</span>
+                    <strong>${priceText}</strong>
+                </div>
+            `;
+            catalogContainer.appendChild(label);
+        });
+    }
+
+    function generateSummary() {
+        const checkedBoxes = document.querySelectorAll('input[name="services"]:checked');
+        const summaryContainer = document.getElementById('orderSummary');
+        summaryContainer.innerHTML = '';
+        let total = 0;
+
+        checkedBoxes.forEach(box => {
+            const name = box.getAttribute('data-name');
+            const price = parseFloat(box.getAttribute('data-price'));
+            total += price;
+
+            const row = document.createElement('div');
+            row.className = 'summary-item';
+            row.innerHTML = `<span>${name}</span> <span>K${price}</span>`;
+            summaryContainer.appendChild(row);
+        });
+
+        const totalRow = document.createElement('div');
+        totalRow.className = 'summary-item total-row';
+        totalRow.innerHTML = `<span>Total:</span> <span>K${total}</span>`;
+        summaryContainer.appendChild(totalRow);
+
+        return total;
+    }
+
+    function handleSignupSubmit(event) {
+        event.preventDefault();
+        const name = document.getElementById('fullName').value;
+        alert(`Account created successfully for ${name}! (Data not saved to simulated DB)`);
+        logout();
+    }
+</script>
+
+</body>
+</html>
